@@ -13,9 +13,7 @@ function setup() {
     // コート、ボール、ゴールを初期化
     court = new Court();
     ball = new Ball();
-    hoop = new Hoop(600, -100, 0); // ゴール位置（現実的な高さと位置）
-    
-    // シュートを一定間隔で実行
+    hoop = new Hoop(300, -120, 0); // ゴール位置
     setInterval(() => {
         if (ball.isStationary) {
             launchBall();
@@ -29,7 +27,7 @@ function draw() {
     // 3Dカメラの視点設定
     camera(0, -300, 800, 0, 0, 0, 0, 1, 0);
 
-    // コートを描画
+    // コートと3Pラインを描画
     court.show();
 
     // ゴールを描画
@@ -67,15 +65,15 @@ function draw() {
 }
 
 function launchBall() {
-    // シュート開始位置（ランダム化）
-    ball.x = random(-400, -200); // コート内の適切な範囲
-    ball.y = random(-50, 0);
-    ball.z = random(-200, 200);
+    // シュート開始位置をランダム化
+    ball.x = random(-400, -200); // シュート位置
+    ball.y = random(-100, -50);
+    ball.z = random(-150, 150);
 
-    // シュートターゲット（ゴール周辺）
-    const targetX = hoop.x + random(-5, 5);
-    const targetY = hoop.y + random(-5, 5);
-    const targetZ = hoop.z + random(-5, 5);
+    // シュートターゲット（ゴール中心）
+    const targetX = hoop.x + random(-15, 15); // 誤差を小さく
+    const targetY = hoop.y + random(-15, 15);
+    const targetZ = hoop.z + random(-10, 10);
 
     ball.launch(targetX, targetY, targetZ);
     success = false;
@@ -97,7 +95,7 @@ function resetBall() {
 class Ball {
     constructor() {
         this.x = -400;
-        this.y = 0;
+        this.y = -100;
         this.z = 0;
         this.vx = 0;
         this.vy = 0;
@@ -108,7 +106,7 @@ class Ball {
 
     launch(targetX, targetY, targetZ) {
         this.vx = (targetX - this.x) / 30;
-        this.vy = (targetY - this.y) / 30 - 1.5; // 放物線を作る調整
+        this.vy = (targetY - this.y) / 30 - 1.2; // 放物線を作る調整
         this.vz = (targetZ - this.z) / 30;
         this.isStationary = false;
     }
@@ -118,7 +116,7 @@ class Ball {
             this.x += this.vx;
             this.y += this.vy;
             this.z += this.vz;
-            this.vy += 0.4; // 重力
+            this.vy += 0.35; // 重力
             this.vx *= 0.99; // 空気抵抗
             this.vz *= 0.99; // 空気抵抗
         }
@@ -172,8 +170,19 @@ class Court {
         push();
         fill(100, 150, 100);
         noStroke();
+        translate(0, 100, 0); // コートを下に移動
         rotateX(HALF_PI);
         plane(1400, 800); // コートサイズ
+        pop();
+
+        // 3Pラインを描画
+        push();
+        noFill();
+        stroke(255);
+        strokeWeight(2);
+        translate(0, 100, 0);
+        rotateX(HALF_PI);
+        ellipse(0, 0, 450 * 2, 450 * 2); // 3Pライン
         pop();
     }
 }
