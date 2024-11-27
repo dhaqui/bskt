@@ -14,10 +14,8 @@
             align-items: center;
             margin-top: 20px;
         }
-        iframe {
-            border: none;
-            width: 800px;
-            height: 600px;
+        canvas {
+            border: 1px solid #ccc;
         }
         #evaluation {
             margin-top: 20px;
@@ -34,6 +32,7 @@
             <p>3-Point Success Rate: <span id="threePointRate">0%</span></p>
         </div>
     </div>
-    <script type="module" src="./script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+    <script src="./script.js"></script>
 </body>
 </html>
