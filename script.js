@@ -1,5 +1,6 @@
 let ball;
 let hoop;
+let court;
 let success = false;
 let twoPointAttempts = 0;
 let twoPointSuccess = 0;
@@ -9,10 +10,11 @@ let threePointSuccess = 0;
 function setup() {
     createCanvas(800, 600, WEBGL);
 
-    // Initialize the ball and hoop
+    // コート、ボール、ゴールを初期化
+    court = new Court();
     ball = new Ball();
-    hoop = new Hoop(300, -50, 0);
-
+    hoop = new Hoop(600, -100, 0); // ゴール位置（現実的な高さと位置）
+    
     // シュートを一定間隔で実行
     setInterval(() => {
         if (ball.isStationary) {
@@ -22,25 +24,22 @@ function setup() {
 }
 
 function draw() {
-    background(200);
+    background(220);
 
     // 3Dカメラの視点設定
-    camera(400, -200, 800, 0, 0, 0, 0, 1, 0);
+    camera(0, -300, 800, 0, 0, 0, 0, 1, 0);
 
-    // Draw the court
-    drawCourt();
+    // コートを描画
+    court.show();
 
-    // Draw the hoop
+    // ゴールを描画
     hoop.show();
 
-    // Draw XYZ axes
-    drawAxes();
-
-    // Update and draw the ball
+    // ボールを更新・描画
     ball.update();
     ball.show();
 
-    // Check for score
+    // 成功判定
     if (!success && ball.isScored(hoop)) {
         success = true;
         if (ball.isThreePoint()) {
@@ -54,7 +53,7 @@ function draw() {
         resetBall();
     }
 
-    // Check if ball missed
+    // ボールが外れた場合
     if (ball.isOutOfBounds()) {
         success = true;
         if (ball.isThreePoint()) {
@@ -67,41 +66,15 @@ function draw() {
     }
 }
 
-function drawCourt() {
-    push();
-    fill(100, 150, 100);
-    noStroke();
-    rotateX(HALF_PI);
-    translate(0, 0, -1);
-    plane(600, 400); // コートの平面
-    pop();
-}
-
-function drawAxes() {
-    strokeWeight(2);
-
-    // X軸
-    stroke(255, 0, 0);
-    line(0, 0, 0, 300, 0, 0);
-
-    // Y軸
-    stroke(0, 255, 0);
-    line(0, 0, 0, 0, -300, 0);
-
-    // Z軸
-    stroke(0, 0, 255);
-    line(0, 0, 0, 0, 0, 300);
-}
-
 function launchBall() {
-    // ランダムな開始地点を設定
-    ball.x = random(-300, -100); // 左側のランダムな位置
-    ball.y = random(0, 100);    // 縦方向のランダムな位置
-    ball.z = random(-100, 100); // 奥行きのランダムな位置
+    // シュート開始位置（ランダム化）
+    ball.x = random(-400, -200); // コート内の適切な範囲
+    ball.y = random(-50, 0);
+    ball.z = random(-200, 200);
 
-    // ランダムなターゲット方向にシュート
-    const targetX = hoop.x + random(-10, 10); // ゴール付近のランダム誤差
-    const targetY = hoop.y + random(-10, 10);
+    // シュートターゲット（ゴール周辺）
+    const targetX = hoop.x + random(-5, 5);
+    const targetY = hoop.y + random(-5, 5);
     const targetZ = hoop.z + random(-5, 5);
 
     ball.launch(targetX, targetY, targetZ);
@@ -123,8 +96,8 @@ function resetBall() {
 // Ball class
 class Ball {
     constructor() {
-        this.x = -300;
-        this.y = 50;
+        this.x = -400;
+        this.y = 0;
         this.z = 0;
         this.vx = 0;
         this.vy = 0;
@@ -134,9 +107,9 @@ class Ball {
     }
 
     launch(targetX, targetY, targetZ) {
-        this.vx = (targetX - this.x) / 40;
-        this.vy = (targetY - this.y) / 40 - 1; // 少し下に曲げる
-        this.vz = (targetZ - this.z) / 40;
+        this.vx = (targetX - this.x) / 30;
+        this.vy = (targetY - this.y) / 30 - 1.5; // 放物線を作る調整
+        this.vz = (targetZ - this.z) / 30;
         this.isStationary = false;
     }
 
@@ -145,7 +118,9 @@ class Ball {
             this.x += this.vx;
             this.y += this.vy;
             this.z += this.vz;
-            this.vy += 0.3; // Simulate gravity
+            this.vy += 0.4; // 重力
+            this.vx *= 0.99; // 空気抵抗
+            this.vz *= 0.99; // 空気抵抗
         }
     }
 
@@ -163,11 +138,11 @@ class Ball {
     }
 
     isOutOfBounds() {
-        return this.y > 200 || this.x > 500 || this.z > 300 || this.z < -300;
+        return this.y > 300 || this.x > 700 || this.z > 300 || this.z < -300;
     }
 
     isThreePoint() {
-        return dist(this.x, this.y, this.z, hoop.x, hoop.y, hoop.z) > 150;
+        return dist(this.x, 0, this.z, 0, 0, 0) > 225; // 距離で判定
     }
 }
 
@@ -187,6 +162,18 @@ class Hoop {
         stroke(255, 0, 0);
         strokeWeight(3);
         ellipse(0, 0, this.radius * 2);
+        pop();
+    }
+}
+
+// Court class
+class Court {
+    show() {
+        push();
+        fill(100, 150, 100);
+        noStroke();
+        rotateX(HALF_PI);
+        plane(1400, 800); // コートサイズ
         pop();
     }
 }
