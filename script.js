@@ -7,7 +7,7 @@ let twoPointAttempts = 0;
 let twoPointSuccess = 0;
 let threePointAttempts = 0;
 let threePointSuccess = 0;
-let autoInterval;
+let autoIntervals = []; // Store intervals for multiple random timings
 
 function setup() {
     createCanvas(800, 600, WEBGL);
@@ -75,37 +75,43 @@ function mousePressed() {
 }
 
 function startAutoMode() {
-    if (autoInterval) clearInterval(autoInterval);
-    autoInterval = setInterval(() => {
-        if (ball.isStationary) {
-            launchBall();
-        }
-    }, 2000);
+    stopAutoMode(); // Clear any existing intervals
+
+    // Add multiple intervals with random timings
+    for (let i = 0; i < 3; i++) {
+        const interval = setInterval(() => {
+            if (ball.isStationary) {
+                launchBall();
+            }
+        }, random(1500, 4000)); // Random intervals between 1.5s and 4s
+        autoIntervals.push(interval);
+    }
 }
 
 function stopAutoMode() {
-    if (autoInterval) clearInterval(autoInterval);
+    autoIntervals.forEach((interval) => clearInterval(interval));
+    autoIntervals = [];
 }
 
-window.setMode = function(newMode) { // Make setMode globally accessible
+function setMode(newMode) {
     mode = newMode;
     if (mode === 'auto') {
         startAutoMode();
     } else {
         stopAutoMode();
     }
-};
+}
 
 function launchBall() {
     // Randomized starting position
-    ball.x = random(-400, -200);
-    ball.y = random(-50, 150);
-    ball.z = random(-150, 150);
+    ball.x = random(-600, -200); // Further range for diverse starting points
+    ball.y = random(-150, -50);
+    ball.z = random(-200, 200);
 
     // Randomized target direction near the goal
-    const targetX = hoop.x + random(-15, 15);
-    const targetY = hoop.y + random(-15, 15);
-    const targetZ = hoop.z + random(-10, 310);
+    const targetX = hoop.x + random(-20, 20);
+    const targetY = hoop.y + random(-20, 20);
+    const targetZ = hoop.z + random(-15, 15);
 
     ball.launch(targetX, targetY, targetZ);
     success = false;
@@ -148,7 +154,7 @@ class Ball {
             this.x += this.vx;
             this.y += this.vy;
             this.z += this.vz;
-            this.vy += 0.15; // Gravity
+            this.vy += 0.35; // Gravity
             this.vx *= 0.99; // Air resistance
             this.vz *= 0.99; // Air resistance
         }
@@ -218,5 +224,4 @@ class Court {
         pop();
     }
 }
-
 
