@@ -105,7 +105,7 @@ function launchBall() {
     // Randomized target direction near the goal
     const targetX = hoop.x + random(-15, 15);
     const targetY = hoop.y + random(-15, 15);
-    const targetZ = hoop.z + random(-10, 10);
+    const targetZ = hoop.z + random(-10, 110);
 
     ball.launch(targetX, targetY, targetZ);
     success = false;
