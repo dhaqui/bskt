@@ -27,8 +27,14 @@ function draw() {
     // 3Dカメラの視点設定
     camera(400, -200, 800, 0, 0, 0, 0, 1, 0);
 
+    // Draw the court
+    drawCourt();
+
     // Draw the hoop
     hoop.show();
+
+    // Draw XYZ axes
+    drawAxes();
 
     // Update and draw the ball
     ball.update();
@@ -61,16 +67,42 @@ function draw() {
     }
 }
 
+function drawCourt() {
+    push();
+    fill(100, 150, 100);
+    noStroke();
+    rotateX(HALF_PI);
+    translate(0, 0, -1);
+    plane(600, 400); // コートの平面
+    pop();
+}
+
+function drawAxes() {
+    strokeWeight(2);
+
+    // X軸
+    stroke(255, 0, 0);
+    line(0, 0, 0, 300, 0, 0);
+
+    // Y軸
+    stroke(0, 255, 0);
+    line(0, 0, 0, 0, -300, 0);
+
+    // Z軸
+    stroke(0, 0, 255);
+    line(0, 0, 0, 0, 0, 300);
+}
+
 function launchBall() {
     // ランダムな開始地点を設定
-    ball.x = random(-300, -200); // 左側のランダムな位置
-    ball.y = random(-50, 100);  // 縦方向のランダムな位置
+    ball.x = random(-300, -100); // 左側のランダムな位置
+    ball.y = random(0, 100);    // 縦方向のランダムな位置
     ball.z = random(-100, 100); // 奥行きのランダムな位置
 
     // ランダムなターゲット方向にシュート
-    const targetX = hoop.x + random(-20, 20);
-    const targetY = hoop.y + random(-20, 20);
-    const targetZ = hoop.z + random(-10, 10);
+    const targetX = hoop.x + random(-10, 10); // ゴール付近のランダム誤差
+    const targetY = hoop.y + random(-10, 10);
+    const targetZ = hoop.z + random(-5, 5);
 
     ball.launch(targetX, targetY, targetZ);
     success = false;
@@ -92,7 +124,7 @@ function resetBall() {
 class Ball {
     constructor() {
         this.x = -300;
-        this.y = 0;
+        this.y = 50;
         this.z = 0;
         this.vx = 0;
         this.vy = 0;
@@ -102,9 +134,9 @@ class Ball {
     }
 
     launch(targetX, targetY, targetZ) {
-        this.vx = (targetX - this.x) / 30;
-        this.vy = (targetY - this.y) / 30;
-        this.vz = (targetZ - this.z) / 30;
+        this.vx = (targetX - this.x) / 40;
+        this.vy = (targetY - this.y) / 40 - 1; // 少し下に曲げる
+        this.vz = (targetZ - this.z) / 40;
         this.isStationary = false;
     }
 
@@ -113,7 +145,7 @@ class Ball {
             this.x += this.vx;
             this.y += this.vy;
             this.z += this.vz;
-            this.vy += 0.4; // Simulate gravity
+            this.vy += 0.3; // Simulate gravity
         }
     }
 
