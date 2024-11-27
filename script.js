@@ -12,6 +12,13 @@ function setup() {
     // Initialize the ball and hoop
     ball = new Ball();
     hoop = new Hoop(width - 100, height / 2 - 50);
+
+    // シュートを一定間隔で実行
+    setInterval(() => {
+        if (ball.isStationary) {
+            launchBall();
+        }
+    }, 2000); // 2秒ごとにシュート
 }
 
 function draw() {
@@ -51,12 +58,12 @@ function draw() {
     }
 }
 
-function mousePressed() {
-    // Launch the ball
-    if (ball.isStationary) {
-        ball.launch(mouseX, mouseY);
-        success = false;
-    }
+function launchBall() {
+    // ランダムな位置からシュートを発射
+    const targetX = random(width - 200, width - 50); // ゴール付近をターゲット
+    const targetY = random(height / 4, height / 2); // ゴールの高さ周辺
+    ball.launch(targetX, targetY);
+    success = false;
 }
 
 function updateEvaluation() {
@@ -129,4 +136,5 @@ class Hoop {
         ellipse(this.x, this.y, this.radius * 2);
     }
 }
+
 
