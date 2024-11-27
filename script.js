@@ -148,7 +148,7 @@ class Ball {
             this.x += this.vx;
             this.y += this.vy;
             this.z += this.vz;
-            this.vy += 0.35; // Gravity
+            this.vy += 0.15; // Gravity
             this.vx *= 0.99; // Air resistance
             this.vz *= 0.99; // Air resistance
         }
