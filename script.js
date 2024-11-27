@@ -7,11 +7,11 @@ let threePointAttempts = 0;
 let threePointSuccess = 0;
 
 function setup() {
-    createCanvas(800, 600);
+    createCanvas(800, 600, WEBGL);
 
     // Initialize the ball and hoop
     ball = new Ball();
-    hoop = new Hoop(width - 100, height / 2 - 50);
+    hoop = new Hoop(300, -50, 0);
 
     // シュートを一定間隔で実行
     setInterval(() => {
@@ -23,6 +23,9 @@ function setup() {
 
 function draw() {
     background(200);
+
+    // 3Dカメラの視点設定
+    camera(400, -200, 800, 0, 0, 0, 0, 1, 0);
 
     // Draw the hoop
     hoop.show();
@@ -59,10 +62,17 @@ function draw() {
 }
 
 function launchBall() {
-    // ランダムな位置からシュートを発射
-    const targetX = random(width - 200, width - 50); // ゴール付近をターゲット
-    const targetY = random(height / 4, height / 2); // ゴールの高さ周辺
-    ball.launch(targetX, targetY);
+    // ランダムな開始地点を設定
+    ball.x = random(-300, -200); // 左側のランダムな位置
+    ball.y = random(-50, 100);  // 縦方向のランダムな位置
+    ball.z = random(-100, 100); // 奥行きのランダムな位置
+
+    // ランダムなターゲット方向にシュート
+    const targetX = hoop.x + random(-20, 20);
+    const targetY = hoop.y + random(-20, 20);
+    const targetZ = hoop.z + random(-10, 10);
+
+    ball.launch(targetX, targetY, targetZ);
     success = false;
 }
 
@@ -81,17 +91,20 @@ function resetBall() {
 // Ball class
 class Ball {
     constructor() {
-        this.x = 100;
-        this.y = height / 2;
+        this.x = -300;
+        this.y = 0;
+        this.z = 0;
         this.vx = 0;
         this.vy = 0;
+        this.vz = 0;
         this.radius = 15;
         this.isStationary = true;
     }
 
-    launch(targetX, targetY) {
-        this.vx = (targetX - this.x) / 20;
-        this.vy = (targetY - this.y) / 20;
+    launch(targetX, targetY, targetZ) {
+        this.vx = (targetX - this.x) / 30;
+        this.vy = (targetY - this.y) / 30;
+        this.vz = (targetZ - this.z) / 30;
         this.isStationary = false;
     }
 
@@ -99,41 +112,50 @@ class Ball {
         if (!this.isStationary) {
             this.x += this.vx;
             this.y += this.vy;
-            this.vy += 0.5; // Simulate gravity
+            this.z += this.vz;
+            this.vy += 0.4; // Simulate gravity
         }
     }
 
     show() {
+        push();
+        translate(this.x, this.y, this.z);
         fill(255, 150, 0);
-        ellipse(this.x, this.y, this.radius * 2);
+        sphere(this.radius);
+        pop();
     }
 
     isScored(hoop) {
-        const d = dist(this.x, this.y, hoop.x, hoop.y);
+        const d = dist(this.x, this.y, this.z, hoop.x, hoop.y, hoop.z);
         return d < this.radius + hoop.radius;
     }
 
     isOutOfBounds() {
-        return this.y > height || this.x > width;
+        return this.y > 200 || this.x > 500 || this.z > 300 || this.z < -300;
     }
 
     isThreePoint() {
-        return this.x > width / 2;
+        return dist(this.x, this.y, this.z, hoop.x, hoop.y, hoop.z) > 150;
     }
 }
 
 // Hoop class
 class Hoop {
-    constructor(x, y) {
+    constructor(x, y, z) {
         this.x = x;
         this.y = y;
+        this.z = z;
         this.radius = 20;
     }
 
     show() {
+        push();
+        translate(this.x, this.y, this.z);
         noFill();
         stroke(255, 0, 0);
-        ellipse(this.x, this.y, this.radius * 2);
+        strokeWeight(3);
+        ellipse(0, 0, this.radius * 2);
+        pop();
     }
 }
 
