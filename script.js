@@ -99,7 +99,7 @@ window.setMode = function(newMode) { // Make setMode globally accessible
 function launchBall() {
     // Randomized starting position
     ball.x = random(-400, -200);
-    ball.y = random(-500, -550);
+    ball.y = random(-50, 150);
     ball.z = random(-150, 150);
 
     // Randomized target direction near the goal
