@@ -87,14 +87,14 @@ function stopAutoMode() {
     if (autoInterval) clearInterval(autoInterval);
 }
 
-function setMode(newMode) {
+window.setMode = function(newMode) { // Make setMode globally accessible
     mode = newMode;
     if (mode === 'auto') {
         startAutoMode();
     } else {
         stopAutoMode();
     }
-}
+};
 
 function launchBall() {
     // Randomized starting position
