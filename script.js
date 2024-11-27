@@ -1,10 +1,8 @@
-import * as THREE from 'three';
-
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(800, 600);
-document.getElementById('basketball-game').contentWindow.document.body.appendChild(renderer.domElement);
+document.getElementById('game-container').appendChild(renderer.domElement);
 
 // Goal drawing
 const ringGeometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);
@@ -60,3 +58,4 @@ function updateEvaluation() {
 }
 
 setInterval(shootBall, 1000);
+
