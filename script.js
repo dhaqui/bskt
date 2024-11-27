@@ -1,61 +1,132 @@
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(800, 600);
-document.getElementById('game-container').appendChild(renderer.domElement);
-
-// Goal drawing
-const ringGeometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);
-const ringMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-ring.position.set(0, 2, 0);
-scene.add(ring);
-
-// Court drawing
-const courtGeometry = new THREE.PlaneGeometry(10, 10);
-const courtMaterial = new THREE.MeshBasicMaterial({ color: 0x008000 });
-const court = new THREE.Mesh(courtGeometry, courtMaterial);
-court.rotation.x = -Math.PI / 2;
-scene.add(court);
-
-// Camera setup
-camera.position.z = 5;
-camera.position.y = 3;
-camera.lookAt(0, 2, 0);
-
-renderer.render(scene, camera);
-
-// Variables for tracking success rates
-let twoPointSuccess = 0;
+let ball;
+let hoop;
+let success = false;
 let twoPointAttempts = 0;
-let threePointSuccess = 0;
+let twoPointSuccess = 0;
 let threePointAttempts = 0;
+let threePointSuccess = 0;
 
-function shootBall() {
-    const x = Math.random() * 6 - 3;
-    const z = Math.random() * 6 - 3;
-    const isThreePoint = Math.sqrt(x ** 2 + z ** 2) > 3;
+function setup() {
+    createCanvas(800, 600);
 
-    const success = Math.random() < (isThreePoint ? 0.4 : 0.7);
+    // Initialize the ball and hoop
+    ball = new Ball();
+    hoop = new Hoop(width - 100, height / 2 - 50);
+}
 
-    if (isThreePoint) {
-        threePointAttempts++;
-        if (success) threePointSuccess++;
-    } else {
-        twoPointAttempts++;
-        if (success) twoPointSuccess++;
+function draw() {
+    background(200);
+
+    // Draw the hoop
+    hoop.show();
+
+    // Update and draw the ball
+    ball.update();
+    ball.show();
+
+    // Check for score
+    if (!success && ball.isScored(hoop)) {
+        success = true;
+        if (ball.isThreePoint()) {
+            threePointAttempts++;
+            threePointSuccess++;
+        } else {
+            twoPointAttempts++;
+            twoPointSuccess++;
+        }
+        updateEvaluation();
+        resetBall();
     }
 
-    updateEvaluation();
+    // Check if ball missed
+    if (ball.isOutOfBounds()) {
+        success = true;
+        if (ball.isThreePoint()) {
+            threePointAttempts++;
+        } else {
+            twoPointAttempts++;
+        }
+        updateEvaluation();
+        resetBall();
+    }
+}
+
+function mousePressed() {
+    // Launch the ball
+    if (ball.isStationary) {
+        ball.launch(mouseX, mouseY);
+        success = false;
+    }
 }
 
 function updateEvaluation() {
-    const twoPointRate = (twoPointSuccess / twoPointAttempts) * 100 || 0;
-    const threePointRate = (threePointSuccess / threePointAttempts) * 100 || 0;
+    const twoPointRate = ((twoPointSuccess / twoPointAttempts) * 100).toFixed(2);
+    const threePointRate = ((threePointSuccess / threePointAttempts) * 100).toFixed(2);
 
-    document.getElementById('twoPointRate').textContent = `${twoPointRate.toFixed(2)}%`;
-    document.getElementById('threePointRate').textContent = `${threePointRate.toFixed(2)}%`;
+    document.getElementById('twoPointRate').textContent = `${twoPointRate}%`;
+    document.getElementById('threePointRate').textContent = `${threePointRate}%`;
 }
 
-setInterval(shootBall, 1000);
+function resetBall() {
+    ball = new Ball();
+}
+
+// Ball class
+class Ball {
+    constructor() {
+        this.x = 100;
+        this.y = height / 2;
+        this.vx = 0;
+        this.vy = 0;
+        this.radius = 15;
+        this.isStationary = true;
+    }
+
+    launch(targetX, targetY) {
+        this.vx = (targetX - this.x) / 20;
+        this.vy = (targetY - this.y) / 20;
+        this.isStationary = false;
+    }
+
+    update() {
+        if (!this.isStationary) {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.vy += 0.5; // Simulate gravity
+        }
+    }
+
+    show() {
+        fill(255, 150, 0);
+        ellipse(this.x, this.y, this.radius * 2);
+    }
+
+    isScored(hoop) {
+        const d = dist(this.x, this.y, hoop.x, hoop.y);
+        return d < this.radius + hoop.radius;
+    }
+
+    isOutOfBounds() {
+        return this.y > height || this.x > width;
+    }
+
+    isThreePoint() {
+        return this.x > width / 2;
+    }
+}
+
+// Hoop class
+class Hoop {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 20;
+    }
+
+    show() {
+        noFill();
+        stroke(255, 0, 0);
+        ellipse(this.x, this.y, this.radius * 2);
+    }
+}
 
