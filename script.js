@@ -1,43 +1,43 @@
 let ball;
 let hoop;
 let court;
+let mode = 'auto'; // 'auto' or 'manual'
 let success = false;
 let twoPointAttempts = 0;
 let twoPointSuccess = 0;
 let threePointAttempts = 0;
 let threePointSuccess = 0;
+let autoInterval;
 
 function setup() {
     createCanvas(800, 600, WEBGL);
 
-    // コート、ボール、ゴールを初期化
+    // Initialize court, ball, and hoop
     court = new Court();
     ball = new Ball();
-    hoop = new Hoop(300, -120, 0); // ゴール位置
-    setInterval(() => {
-        if (ball.isStationary) {
-            launchBall();
-        }
-    }, 2000); // 2秒ごとにシュート
+    hoop = new Hoop(300, -120, 0); // Goal position
+
+    // Start auto mode by default
+    startAutoMode();
 }
 
 function draw() {
     background(220);
 
-    // 3Dカメラの視点設定
+    // Camera settings
     camera(0, -300, 800, 0, 0, 0, 0, 1, 0);
 
-    // コートと3Pラインを描画
+    // Draw court and 3P line
     court.show();
 
-    // ゴールを描画
+    // Draw the hoop
     hoop.show();
 
-    // ボールを更新・描画
+    // Update and draw the ball
     ball.update();
     ball.show();
 
-    // 成功判定
+    // Check if the ball scores
     if (!success && ball.isScored(hoop)) {
         success = true;
         if (ball.isThreePoint()) {
@@ -51,7 +51,7 @@ function draw() {
         resetBall();
     }
 
-    // ボールが外れた場合
+    // Check if the ball is out of bounds
     if (ball.isOutOfBounds()) {
         success = true;
         if (ball.isThreePoint()) {
@@ -64,14 +64,46 @@ function draw() {
     }
 }
 
+function mousePressed() {
+    if (mode === 'manual' && ball.isStationary) {
+        const targetX = map(mouseX - width / 2, -width / 2, width / 2, -800, 800);
+        const targetY = map(mouseY - height / 2, -height / 2, height / 2, 300, -300);
+        const targetZ = random(-10, 10);
+        ball.launch(targetX, targetY, targetZ);
+        success = false;
+    }
+}
+
+function startAutoMode() {
+    if (autoInterval) clearInterval(autoInterval);
+    autoInterval = setInterval(() => {
+        if (ball.isStationary) {
+            launchBall();
+        }
+    }, 2000);
+}
+
+function stopAutoMode() {
+    if (autoInterval) clearInterval(autoInterval);
+}
+
+function setMode(newMode) {
+    mode = newMode;
+    if (mode === 'auto') {
+        startAutoMode();
+    } else {
+        stopAutoMode();
+    }
+}
+
 function launchBall() {
-    // シュート開始位置をランダム化
-    ball.x = random(-400, -200); // シュート位置
+    // Randomized starting position
+    ball.x = random(-400, -200);
     ball.y = random(-100, -50);
     ball.z = random(-150, 150);
 
-    // シュートターゲット（ゴール中心）
-    const targetX = hoop.x + random(-15, 15); // 誤差を小さく
+    // Randomized target direction near the goal
+    const targetX = hoop.x + random(-15, 15);
     const targetY = hoop.y + random(-15, 15);
     const targetZ = hoop.z + random(-10, 10);
 
@@ -106,7 +138,7 @@ class Ball {
 
     launch(targetX, targetY, targetZ) {
         this.vx = (targetX - this.x) / 30;
-        this.vy = (targetY - this.y) / 30 - 1.2; // 放物線を作る調整
+        this.vy = (targetY - this.y) / 30 - 1.2; // Slight parabola adjustment
         this.vz = (targetZ - this.z) / 30;
         this.isStationary = false;
     }
@@ -116,9 +148,9 @@ class Ball {
             this.x += this.vx;
             this.y += this.vy;
             this.z += this.vz;
-            this.vy += 0.35; // 重力
-            this.vx *= 0.99; // 空気抵抗
-            this.vz *= 0.99; // 空気抵抗
+            this.vy += 0.35; // Gravity
+            this.vx *= 0.99; // Air resistance
+            this.vz *= 0.99; // Air resistance
         }
     }
 
@@ -140,7 +172,7 @@ class Ball {
     }
 
     isThreePoint() {
-        return dist(this.x, 0, this.z, 0, 0, 0) > 225; // 距離で判定
+        return dist(this.x, 0, this.z, 0, 0, 0) > 225; // Distance-based
     }
 }
 
@@ -170,19 +202,19 @@ class Court {
         push();
         fill(100, 150, 100);
         noStroke();
-        translate(0, 100, 0); // コートを下に移動
+        translate(0, 100, 0); // Lower the court
         rotateX(HALF_PI);
-        plane(1400, 800); // コートサイズ
+        plane(1400, 800); // Court size
         pop();
 
-        // 3Pラインを描画
+        // Draw 3-point line
         push();
         noFill();
         stroke(255);
         strokeWeight(2);
         translate(0, 100, 0);
         rotateX(HALF_PI);
-        ellipse(0, 0, 450 * 2, 450 * 2); // 3Pライン
+        ellipse(0, 0, 450 * 2, 450 * 2); // 3-point line
         pop();
     }
 }
