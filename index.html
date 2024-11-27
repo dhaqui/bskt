@@ -11,12 +11,20 @@
             font-family: Arial, sans-serif;
             text-align: center;
         }
-        #evaluation {
-            margin-top: 20px;
+        #controls {
+            margin-bottom: 20px;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
+    <div id="controls">
+        <button onclick="setMode('auto')">Auto Mode</button>
+        <button onclick="setMode('manual')">Manual Mode</button>
+    </div>
     <div id="evaluation">
         <h3>Evaluation</h3>
         <p>2-Point Success Rate: <span id="twoPointRate">0%</span></p>
